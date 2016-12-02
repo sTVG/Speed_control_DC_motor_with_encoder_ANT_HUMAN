@@ -10,9 +10,9 @@
  * spin down for 15 seconds 150 seconds total
 */
 #define delayStart    200     // must be greater than 0, probably safe to be greater than 100, bust be less than spinupTime
-#define spinupTime    15000   // must be greater than delay start and less than spinTime
-#define spinTime      135000  // must be greater than spinupTime and less than spindownTime
-#define spindownTime  150000  // must be greater than spinTime
+#define spinupTime    10000   // must be greater than delay start and less than spinTime
+#define spinTime      25000  // must be greater than spinupTime and less than spindownTime
+#define spindownTime  40000  // must be greater than spinTime
 
 long previousMillis1 = 0; // will store last time of the cycle end
 
@@ -92,10 +92,6 @@ void motorCycle()
   digitalWrite(brakePin,HIGH); // LOW = Brake, High = no brake
   digitalWrite(spinDirectionPin, LOW); // LOW = CW, HIGH = CCW
 
-
-
-  
-
  unsigned long milliCounter = millis();
   if (milliCounter - previousMillis1 >= MainPeriod) 
   {
@@ -139,49 +135,49 @@ digitalWrite(ledPin, HIGH);
     
 if(milli2 < spindownTime )
 {  
-
-  if ( milli2 <= delayStart)
-  {
-    digitalWrite(spinSpeedPin,HIGH);
-    digitalWrite(ledPin, HIGH); //need to make this flash
-  }
-
-  if ( delayStart < milli2 && milli2 <= spinupTime) 
-  { 
-      map1=delayStart;
-      map2=spinupTime;
-      pwm1=255;
-      pwm2=1;
-    speedee = map(milli2,map1,map2,pwm1,pwm2);
-    analogWrite(spinSpeedPin,speedee);
-    digitalWrite(ledPin, HIGH); //could add flashing function matching acceleration
-  }
-  if( spinupTime < milli2 && milli2  <+ spinTime)
-   {
-      map1=spinupTime;
-      map2=spinTime;
-      pwm1=1;
-      pwm2=2;
-   speedee = map(milli2,map1,map2,pwm1,pwm2);
-    analogWrite(spinSpeedPin,speedee);
-    digitalWrite(ledPin, HIGH); //could add flashing function matching speed
-   }
-   
-  if( spinTime < milli2 && milli2 <= spindownTime)
+  if( spinTime <= milli2 && milli2 < spindownTime)
    {
       map1=spinTime;
-      map2=spindownTime;
-      pwm1=1;
+      map2=spindownTime-spinTime;
+      pwm1=0;
       pwm2=255;
       speedee = map(milli2,map1,map2,pwm1,pwm2);
       analogWrite(spinSpeedPin,speedee);
       digitalWrite(ledPin, HIGH); //could add flashing function matching deceleration
-    
     }
+
+if( spinupTime <= milli2 && milli2  < spinTime)
+   {
+      map1=spinupTime;
+      map2=spinTime-spinupTime;
+      pwm1=0;
+      pwm2=0;
+   speedee = map(milli2,map1,map2,pwm1,pwm2);
+    analogWrite(spinSpeedPin,0);
+    digitalWrite(ledPin, HIGH); //could add flashing function matching speed
+   }
+   
+  if ( delayStart <= milli2 && milli2 < spinupTime) 
+  { 
+      map1=delayStart;
+      map2=spinupTime-delayStart;
+      pwm1=255;
+      pwm2=0;
+    speedee = map(milli2,map1,map2,pwm1,pwm2);
+    analogWrite(spinSpeedPin,speedee);
+    digitalWrite(ledPin, HIGH); //could add flashing function matching acceleration
+  }
+  
+   
+   if ( milli2 < delayStart)
+  {
+    analogWrite(spinSpeedPin,255);
+    digitalWrite(ledPin, HIGH); //need to make this flash
+  }
   
  }
 
-  if(milli2 > spindownTime )
+  if(milli2 >= spindownTime )
   {
   //runs at the end of every cycle
   digitalWrite(ledPin, LOW);
